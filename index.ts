@@ -4,7 +4,7 @@ import axios, { AxiosResponse } from "axios";
 import cliProgress from "cli-progress";
 import crypto from "crypto";
 import fs from "fs";
-import { parse as xmlParse } from "fast-xml-parser";
+import { XMLParser } from "fast-xml-parser";
 import path from "path";
 import unzip from "unzip-stream";
 import yargs from "yargs";
@@ -17,6 +17,13 @@ import {
 } from "./utils/msgUtils";
 import { version as packageVersion } from "./package.json";
 
+// There is no viable option other than using the `unzip-stream` module, however,
+// it depends on an extremely old dependency `binary`, which uses `new Buffer()`
+// and causes node to complain. Suppress warnings until we find an alternative.
+process.removeAllListeners("warning");
+
+const parser = new XMLParser({});
+
 const getLatestVersion = async (
   region: string,
   model: string
@@ -26,9 +33,9 @@ const getLatestVersion = async (
       `https://fota-cloud-dn.ospserver.net/firmware/${region}/${model}/version.xml`
     )
     .then((res: AxiosResponse) => {
-      const [pda, csc, modem] = xmlParse(
-        res.data
-      ).versioninfo.firmware.version.latest.split("/");
+      const [pda, csc, modem] = parser
+        .parse(res.data)
+        .versioninfo.firmware.version.latest.split("/");
 
       return { pda, csc, modem };
     });
@@ -58,9 +65,8 @@ const main = async (region: string, model: string): Promise<void> => {
 
   const handleHeaders = (responseHeaders: any) => {
     if (responseHeaders.nonce != null) {
-      const { Authorization, nonce: newNonce } = handleAuthRotation(
-        responseHeaders
-      );
+      const { Authorization, nonce: newNonce } =
+        handleAuthRotation(responseHeaders);
 
       Object.assign(nonce, newNonce);
       headers.Authorization = Authorization;
@@ -119,7 +125,7 @@ const main = async (region: string, model: string): Promise<void> => {
       return res;
     })
     .then((res: AxiosResponse) => {
-      const parsedInfo = xmlParse(res.data);
+      const parsedInfo = parser.parse(res.data);
 
       return {
         binaryByteSize: parsedInfo.FUSMsg.FUSBody.Put.BINARY_BYTE_SIZE.Data,
