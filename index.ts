@@ -209,6 +209,7 @@ const main = async (region: string, model: string): Promise<void> => {
             .pipe(fs.createWriteStream(path.join(outputFolder, entry.path)))
             .on("finish", () => {
               if (downloadedSize === binaryByteSize) {
+                console.log();
                 process.exit();
               }
             });
