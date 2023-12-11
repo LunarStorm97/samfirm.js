@@ -22,7 +22,7 @@ export const getBinaryInformMsg = (
   model: string,
   nonce: string
 ): string => {
-  const msg: FUSMsg = {
+  let msg: FUSMsg = {
     FUSMsg: {
       FUSHdr: {
         ProtoVer: "1.0",
@@ -54,6 +54,24 @@ export const getBinaryInformMsg = (
       },
     },
   };
+
+  //hardcode EUX as Germany and EUY as Republic of Serbia
+  if (region == "EUX") {
+    let xelement = msg.FUSMsg.FUSBody.Put;
+
+    xelement.DEVICE_AID_CODE = { Data: region, };
+    xelement.DEVICE_CC_CODE = { Data: "DE", };
+    xelement.MCC_NUM = { Data: "262", };
+    xelement.MNC_NUM = { Data: "01", };
+
+  } else if (region == "EUY") {
+    let xelement = msg.FUSMsg.FUSBody.Put;
+    
+    xelement.DEVICE_AID_CODE = { Data: region, };
+    xelement.DEVICE_CC_CODE = { Data: "RS", };
+    xelement.MCC_NUM = { Data: "220", };
+    xelement.MNC_NUM = { Data: "01", };
+  }
 
   return builder.build(msg);
 };

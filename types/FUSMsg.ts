@@ -5,6 +5,18 @@ export interface FUSMsg {
     };
     FUSBody: {
       Put: {
+        DEVICE_AID_CODE?: {
+          Data: string;
+        };
+        DEVICE_CC_CODE?: {
+          Data: string;
+        };
+        MCC_NUM?: {
+          Data: string;
+        };
+        MNC_NUM?: {
+          Data: string;
+        };
         ACCESS_MODE?: {
           Data: number;
         };
