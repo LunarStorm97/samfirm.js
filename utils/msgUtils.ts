@@ -38,6 +38,9 @@ export const getBinaryInformMsg = (
           CLIENT_PRODUCT: {
             Data: "Smart Switch",
           },
+          CLIENT_VERSION: {
+            Data: "4.3.23123_1",
+          },
           DEVICE_FW_VERSION: {
             Data: version,
           },
@@ -46,6 +49,9 @@ export const getBinaryInformMsg = (
           },
           DEVICE_MODEL_NAME: {
             Data: model,
+          },
+          DEVICE_IMEI_PUSH: {
+            Data: "00000000000000",
           },
           LOGIC_CHECK: {
             Data: getLogicCheck(version, nonce),

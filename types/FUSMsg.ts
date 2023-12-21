@@ -29,6 +29,9 @@ export interface FUSMsg {
         CLIENT_PRODUCT?: {
           Data: string;
         };
+        CLIENT_VERSION?: {
+          Data: string;
+        };
         DEVICE_FW_VERSION?: {
           Data: string;
         };
@@ -36,6 +39,9 @@ export interface FUSMsg {
           Data: string;
         };
         DEVICE_MODEL_NAME?: {
+          Data: string;
+        };
+        DEVICE_IMEI_PUSH?: {
           Data: string;
         };
         LOGIC_CHECK?: {
