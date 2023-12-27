@@ -41,7 +41,7 @@ const getLatestVersion = async (
     });
 };
 
-const main = async (region: string, model: string): Promise<void> => {
+const main = async (region: string, model: string, imei: string): Promise<void> => {
   console.log(`
   Model: ${model}
   Region: ${region}`);
@@ -110,7 +110,8 @@ const main = async (region: string, model: string): Promise<void> => {
         `${pda}/${csc}/${modem !== "" ? modem : pda}/${pda}`,
         region,
         model,
-        nonce.decrypted
+        nonce.decrypted,
+        imei
       ),
       {
         headers: {
@@ -230,10 +231,16 @@ const { argv } = yargs
     type: "string",
     demandOption: true,
   })
+  .option("imei", {
+    alias: "i",
+    describe: "IMEI",
+    type: "string",
+    demandOption: true,
+  })
   .version(packageVersion)
   .alias("v", "version")
   .help();
 
-main(argv.region, argv.model);
+main(argv.region, argv.model, argv.imei);
 
 export {};

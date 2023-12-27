@@ -20,7 +20,8 @@ export const getBinaryInformMsg = (
   version: string,
   region: string,
   model: string,
-  nonce: string
+  nonce: string,
+  imei: string
 ): string => {
   let msg: FUSMsg = {
     FUSMsg: {
@@ -51,7 +52,7 @@ export const getBinaryInformMsg = (
             Data: model,
           },
           DEVICE_IMEI_PUSH: {
-            Data: "00000000000000",
+            Data: imei,
           },
           LOGIC_CHECK: {
             Data: getLogicCheck(version, nonce),
