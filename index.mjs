@@ -1,34 +1,33 @@
 #!/usr/bin/env node
 
-import axios from "axios";
-import cliProgress from "cli-progress";
 import crypto from "crypto";
 import fs from "fs";
-import { XMLParser } from "fast-xml-parser";
 import path from "path";
-import unzip from "unzip-stream";
-import yargs from "yargs";
 
-import { handleAuthRotation } from "./utils/authUtils.js";
+import axios from "axios";
+import cliProgress from "cli-progress";
+import { Command } from "commander";
+import { XMLParser } from "fast-xml-parser";
+import unzip from "unzip-stream";
+
+import { handleAuthRotation } from "./utils/authUtils.mjs";
 import {
   getBinaryInformMsg,
   getBinaryInitMsg,
   getDecryptionKey,
-} from "./utils/msgUtils.js";
-import { version as packageVersion } from "./package.json";
+} from "./utils/msgUtils.mjs";
 
-// Suppress Node.js deprecation warnings for old Buffer usage
-process.removeAllListeners("warning");
+// There is no viable option other than using the `unzip-stream` module, however,
+// it depends on an extremely old dependency `binary`, which uses `new Buffer()`
+// and causes node to complain. Suppress warnings until we find an alternative.
+// process.removeAllListeners("warning");
 
 const parser = new XMLParser({});
 
-const getLatestVersion = async (
-  region,
-  model
-) => {
+const getLatestVersion = async (region, model) => {
   return axios
     .get(
-      `https://fota-cloud-dn.ospserver.net/firmware/${region}/${model}/version.xml`
+      `https://fota-cloud-dn.ospserver.net/firmware/${region}/${model}/version.xml`,
     )
     .then((res) => {
       const [pda, csc, modem] = parser
@@ -109,7 +108,7 @@ const main = async (region, model, imei) => {
         region,
         model,
         nonce.decrypted,
-        imei
+        imei,
       ),
       {
         headers: {
@@ -117,7 +116,7 @@ const main = async (region, model, imei) => {
           Accept: "application/xml",
           "Content-Type": "application/xml",
         },
-      }
+      },
     )
     .then((res) => {
       handleHeaders(res.headers);
@@ -158,7 +157,7 @@ const main = async (region, model, imei) => {
           Accept: "application/xml",
           "Content-Type": "application/xml",
         },
-      }
+      },
     )
     .then((res) => {
       handleHeaders(res.headers);
@@ -168,7 +167,7 @@ const main = async (region, model, imei) => {
   const binaryDecipher = crypto.createDecipheriv(
     "aes-128-ecb",
     decryptionKey,
-    null
+    null,
   );
 
   await axios
@@ -177,7 +176,7 @@ const main = async (region, model, imei) => {
       {
         headers,
         responseType: "stream",
-      }
+      },
     )
     .then((res) => {
       const outputFolder = `${process.cwd()}/${model}_${region}/`;
@@ -216,27 +215,14 @@ const main = async (region, model, imei) => {
     });
 };
 
-const { argv } = yargs
-  .option("model", {
-    alias: "m",
-    describe: "Model",
-    type: "string",
-    demandOption: true,
-  })
-  .option("region", {
-    alias: "r",
-    describe: "Region",
-    type: "string",
-    demandOption: true,
-  })
-  .option("imei", {
-    alias: "i",
-    describe: "IMEI",
-    type: "string",
-    demandOption: true,
-  })
-  .version(packageVersion)
-  .alias("v", "version")
-  .help();
+const program = new Command();
 
-main(argv.region, argv.model, argv.imei);
+program
+  .requiredOption("-m, --model <model>", "Model")
+  .requiredOption("-r, --region <region>", "Region")
+  .requiredOption("-i, --imei <imei>", "IMEI/Serial Number")
+  .parse(process.argv);
+
+const options = program.opts();
+
+main(options.region, options.model, options.imei);
