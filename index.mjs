@@ -10,11 +10,7 @@ import { XMLParser } from 'fast-xml-parser';
 import unzip from 'unzip-stream';
 
 import { handleAuthRotation } from './utils/authUtils.mjs';
-import {
-  getBinaryInformMsg,
-  getBinaryInitMsg,
-  getDecryptionKey,
-} from './utils/msgUtils.mjs';
+import { getBinaryInformMsg, getBinaryInitMsg, getDecryptionKey } from './utils/msgUtils.mjs';
 
 // There is no viable option other than using the `unzip-stream` module, however,
 // it depends on an extremely old dependency `binary`, which uses `new Buffer()`
