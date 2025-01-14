@@ -1,51 +1,51 @@
 export const FUSMsg = {
   FUSMsg: {
     FUSHdr: {
-      ProtoVer: '',
+      ProtoVer: "",
     },
     FUSBody: {
       Put: {
         DEVICE_AID_CODE: {
-          Data: '',
+          Data: "",
         },
         DEVICE_CC_CODE: {
-          Data: '',
+          Data: "",
         },
         MCC_NUM: {
-          Data: '',
+          Data: "",
         },
         MNC_NUM: {
-          Data: '',
+          Data: "",
         },
         ACCESS_MODE: {
           Data: 0,
         },
         BINARY_FILE_NAME: {
-          Data: '',
+          Data: "",
         },
         BINARY_NATURE: {
           Data: 0,
         },
         CLIENT_PRODUCT: {
-          Data: '',
+          Data: "",
         },
         CLIENT_VERSION: {
-          Data: '',
+          Data: "",
         },
         DEVICE_FW_VERSION: {
-          Data: '',
+          Data: "",
         },
         DEVICE_LOCAL_CODE: {
-          Data: '',
+          Data: "",
         },
         DEVICE_MODEL_NAME: {
-          Data: '',
+          Data: "",
         },
         DEVICE_IMEI_PUSH: {
-          Data: '',
+          Data: "",
         },
         LOGIC_CHECK: {
-          Data: '',
+          Data: "",
         },
       },
     },
