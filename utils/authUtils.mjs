@@ -7,7 +7,7 @@ export const decryptNonce = (nonceEncrypted) => {
   const nonceDecipher = crypto.createDecipheriv(
     "aes-256-cbc",
     NONCE_KEY,
-    NONCE_KEY.slice(0, 16)
+    NONCE_KEY.slice(0, 16),
   );
 
   return Buffer.concat([
@@ -27,7 +27,7 @@ export const getAuthorization = (nonceDecrypted) => {
   const authCipher = crypto.createCipheriv(
     "aes-256-cbc",
     key,
-    key.slice(0, 16)
+    key.slice(0, 16),
   );
 
   return Buffer.concat([
