@@ -14,13 +14,7 @@ const getLogicCheck = (input, nonce) => {
   return out;
 };
 
-export const getBinaryInformMsg = (
-  version,
-  region,
-  model,
-  nonce,
-  imei
-) => {
+export const getBinaryInformMsg = (version, region, model, nonce, imei) => {
   let msg = {
     FUSMsg: {
       FUSHdr: {
@@ -60,7 +54,7 @@ export const getBinaryInformMsg = (
     },
   };
 
-  //hardcode EUX as Germany and EUY as Republic of Serbia
+  // hardcode EUX as Germany and EUY as Republic of Serbia
   if (region == "EUX") {
     let xelement = msg.FUSMsg.FUSBody.Put;
 
