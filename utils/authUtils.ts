@@ -9,7 +9,6 @@ const decryptNonce = (nonceEncrypted) => {
     NONCE_KEY,
     NONCE_KEY.slice(0, 16),
   );
-
   return Buffer.concat([
     nonceDecipher.update(nonceEncrypted, "base64"),
     nonceDecipher.final(),
@@ -23,13 +22,11 @@ const getAuthorization = (nonceDecrypted) => {
     key += NONCE_KEY[nonceChar % 16];
   }
   key += AUTH_KEY;
-
   const authCipher = crypto.createCipheriv(
     "aes-256-cbc",
     key,
     key.slice(0, 16),
   );
-
   return Buffer.concat([
     authCipher.update(nonceDecrypted, "utf8"),
     authCipher.final(),
@@ -40,12 +37,8 @@ export const handleAuthRotation = (responseHeaders) => {
   const { nonce } = responseHeaders;
   const nonceDecrypted = decryptNonce(nonce);
   const authorization = getAuthorization(nonceDecrypted);
-
   return {
     Authorization: `FUS nonce="${nonce}", signature="${authorization}", nc="", type="", realm="", newauth="1"`,
-    nonce: {
-      decrypted: nonceDecrypted,
-      encrypted: nonce,
-    },
+    nonce: { decrypted: nonceDecrypted, encrypted: nonce },
   };
 };
