@@ -1,6 +1,4 @@
-#!/usr/bin/env node
-
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import cliProgress from "cli-progress";
 import crypto from "crypto";
 import fs from "fs";
@@ -9,30 +7,30 @@ import path from "path";
 import unzip from "unzip-stream";
 import yargs from "yargs";
 
-import { handleAuthRotation } from "./utils/authUtils";
+import { handleAuthRotation } from "./utils/authUtils.mjs";
 import {
   getBinaryInformMsg,
   getBinaryInitMsg,
   getDecryptionKey,
-} from "./utils/msgUtils";
+} from "./utils/msgUtils.mjs";
 import { version as packageVersion } from "./package.json";
 
 // There is no viable option other than using the `unzip-stream` module, however,
 // it depends on an extremely old dependency `binary`, which uses `new Buffer()`
 // and causes node to complain. Suppress warnings until we find an alternative.
-process.removeAllListeners("warning");
+// process.removeAllListeners("warning");
 
 const parser = new XMLParser({});
 
 const getLatestVersion = async (
-  region: string,
-  model: string
-): Promise<{ pda: string; csc: string; modem: string }> => {
+  region,
+  model
+) => {
   return axios
     .get(
       `https://fota-cloud-dn.ospserver.net/firmware/${region}/${model}/version.xml`
     )
-    .then((res: AxiosResponse) => {
+    .then((res) => {
       const [pda, csc, modem] = parser
         .parse(res.data)
         .versioninfo.firmware.version.latest.split("/");
@@ -41,7 +39,7 @@ const getLatestVersion = async (
     });
 };
 
-const main = async (region: string, model: string, imei: string): Promise<void> => {
+const main = async (region, model, imei) => {
   console.log(`
   Model: ${model}
   Region: ${region}`);
@@ -59,11 +57,11 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
     decrypted: "",
   };
 
-  const headers: Record<string, string> = {
+  const headers = {
     "User-Agent": "Kies2.0_FUS",
   };
 
-  const handleHeaders = (responseHeaders: any) => {
+  const handleHeaders = (responseHeaders) => {
     if (responseHeaders.nonce != null) {
       const { Authorization, nonce: newNonce } =
         handleAuthRotation(responseHeaders);
@@ -73,7 +71,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
     }
 
     const sessionID = responseHeaders["set-cookie"]
-      ?.find((cookie: string) => cookie.startsWith("JSESSIONID"))
+      ?.find((cookie) => cookie.startsWith("JSESSIONID"))
       ?.split(";")[0];
 
     if (sessionID != null) {
@@ -125,7 +123,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
       handleHeaders(res.headers);
       return res;
     })
-    .then((res: AxiosResponse) => {
+    .then((res) => {
       const parsedInfo = parser.parse(res.data);
 
       return {
@@ -181,7 +179,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
         responseType: "stream",
       }
     )
-    .then((res: AxiosResponse) => {
+    .then((res) => {
       const outputFolder = `${process.cwd()}/${model}_${region}/`;
       console.log();
       console.log(outputFolder);
@@ -197,7 +195,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
       progressBar.start(binaryByteSize, downloadedSize);
 
       return res.data
-        .on("data", (buffer: Buffer) => {
+        .on("data", (buffer) => {
           downloadedSize += buffer.length;
           progressBar.update(downloadedSize, { file: currentFile });
         })
