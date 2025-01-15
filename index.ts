@@ -1,38 +1,34 @@
 #!/usr/bin/env node
 
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import cliProgress from "cli-progress";
+import { Command } from "commander";
 import crypto from "crypto";
 import fs from "fs";
 import { XMLParser } from "fast-xml-parser";
 import path from "path";
 import unzip from "unzip-stream";
-import yargs from "yargs";
 
-import { handleAuthRotation } from "./utils/authUtils";
+import { handleAuthRotation } from "./utils/authUtils.mjs";
 import {
   getBinaryInformMsg,
   getBinaryInitMsg,
   getDecryptionKey,
-} from "./utils/msgUtils";
-import { version as packageVersion } from "./package.json";
+} from "./utils/msgUtils.mjs";
 
 // There is no viable option other than using the `unzip-stream` module, however,
 // it depends on an extremely old dependency `binary`, which uses `new Buffer()`
 // and causes node to complain. Suppress warnings until we find an alternative.
-process.removeAllListeners("warning");
+// process.removeAllListeners("warning");
 
 const parser = new XMLParser({});
 
-const getLatestVersion = async (
-  region: string,
-  model: string
-): Promise<{ pda: string; csc: string; modem: string }> => {
+const getLatestVersion = async (region, model) => {
   return axios
     .get(
-      `https://fota-cloud-dn.ospserver.net/firmware/${region}/${model}/version.xml`
+      `https://fota-cloud-dn.ospserver.net/firmware/${region}/${model}/version.xml`,
     )
-    .then((res: AxiosResponse) => {
+    .then((res) => {
       const [pda, csc, modem] = parser
         .parse(res.data)
         .versioninfo.firmware.version.latest.split("/");
@@ -41,7 +37,7 @@ const getLatestVersion = async (
     });
 };
 
-const main = async (region: string, model: string, imei: string): Promise<void> => {
+const main = async (region, model, imei) => {
   console.log(`
   Model: ${model}
   Region: ${region}`);
@@ -59,11 +55,11 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
     decrypted: "",
   };
 
-  const headers: Record<string, string> = {
+  const headers = {
     "User-Agent": "Kies2.0_FUS",
   };
 
-  const handleHeaders = (responseHeaders: any) => {
+  const handleHeaders = (responseHeaders) => {
     if (responseHeaders.nonce != null) {
       const { Authorization, nonce: newNonce } =
         handleAuthRotation(responseHeaders);
@@ -73,7 +69,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
     }
 
     const sessionID = responseHeaders["set-cookie"]
-      ?.find((cookie: string) => cookie.startsWith("JSESSIONID"))
+      ?.find((cookie) => cookie.startsWith("JSESSIONID"))
       ?.split(";")[0];
 
     if (sessionID != null) {
@@ -111,7 +107,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
         region,
         model,
         nonce.decrypted,
-        imei
+        imei,
       ),
       {
         headers: {
@@ -119,13 +115,13 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
           Accept: "application/xml",
           "Content-Type": "application/xml",
         },
-      }
+      },
     )
     .then((res) => {
       handleHeaders(res.headers);
       return res;
     })
-    .then((res: AxiosResponse) => {
+    .then((res) => {
       const parsedInfo = parser.parse(res.data);
 
       return {
@@ -160,7 +156,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
           Accept: "application/xml",
           "Content-Type": "application/xml",
         },
-      }
+      },
     )
     .then((res) => {
       handleHeaders(res.headers);
@@ -170,7 +166,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
   const binaryDecipher = crypto.createDecipheriv(
     "aes-128-ecb",
     decryptionKey,
-    null
+    null,
   );
 
   await axios
@@ -179,9 +175,9 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
       {
         headers,
         responseType: "stream",
-      }
+      },
     )
-    .then((res: AxiosResponse) => {
+    .then((res) => {
       const outputFolder = `${process.cwd()}/${model}_${region}/`;
       console.log();
       console.log(outputFolder);
@@ -197,7 +193,7 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
       progressBar.start(binaryByteSize, downloadedSize);
 
       return res.data
-        .on("data", (buffer: Buffer) => {
+        .on("data", (buffer) => {
           downloadedSize += buffer.length;
           progressBar.update(downloadedSize, { file: currentFile });
         })
@@ -218,29 +214,14 @@ const main = async (region: string, model: string, imei: string): Promise<void> 
     });
 };
 
-const { argv } = yargs
-  .option("model", {
-    alias: "m",
-    describe: "Model",
-    type: "string",
-    demandOption: true,
-  })
-  .option("region", {
-    alias: "r",
-    describe: "Region",
-    type: "string",
-    demandOption: true,
-  })
-  .option("imei", {
-    alias: "i",
-    describe: "IMEI",
-    type: "string",
-    demandOption: true,
-  })
-  .version(packageVersion)
-  .alias("v", "version")
-  .help();
+const program = new Command();
 
-main(argv.region, argv.model, argv.imei);
+program
+  .requiredOption("-m, --model <model>", "Model")
+  .requiredOption("-r, --region <region>", "Region")
+  .requiredOption("-i, --imei <imei>", "IMEI/Serial Number")
+  .parse(process.argv);
 
-export {};
+const options = program.opts();
+
+main(options.region, options.model, options.imei);
