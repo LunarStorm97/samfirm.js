@@ -3,11 +3,11 @@ import crypto from "crypto";
 const NONCE_KEY = "vicopx7dqu06emacgpnpy8j8zwhduwlh";
 const AUTH_KEY = "9u7qab84rpc16gvk";
 
-export const decryptNonce = (nonceEncrypted: string): string => {
+const decryptNonce = (nonceEncrypted) => {
   const nonceDecipher = crypto.createDecipheriv(
     "aes-256-cbc",
     NONCE_KEY,
-    NONCE_KEY.slice(0, 16)
+    NONCE_KEY.slice(0, 16),
   );
 
   return Buffer.concat([
@@ -16,7 +16,7 @@ export const decryptNonce = (nonceEncrypted: string): string => {
   ]).toString("utf-8");
 };
 
-export const getAuthorization = (nonceDecrypted: string): string => {
+const getAuthorization = (nonceDecrypted) => {
   let key = "";
   for (let i = 0; i < 16; i += 1) {
     const nonceChar = nonceDecrypted.charCodeAt(i);
@@ -27,7 +27,7 @@ export const getAuthorization = (nonceDecrypted: string): string => {
   const authCipher = crypto.createCipheriv(
     "aes-256-cbc",
     key,
-    key.slice(0, 16)
+    key.slice(0, 16),
   );
 
   return Buffer.concat([
@@ -36,12 +36,7 @@ export const getAuthorization = (nonceDecrypted: string): string => {
   ]).toString("base64");
 };
 
-export const handleAuthRotation = (
-  responseHeaders: Record<string, string>
-): {
-  Authorization: string;
-  nonce: { decrypted: string; encrypted: string };
-} => {
+export const handleAuthRotation = (responseHeaders) => {
   const { nonce } = responseHeaders;
   const nonceDecrypted = decryptNonce(nonce);
   const authorization = getAuthorization(nonceDecrypted);
