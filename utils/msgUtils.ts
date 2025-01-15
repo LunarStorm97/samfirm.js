@@ -1,29 +1,21 @@
 import crypto from "crypto";
 import { XMLBuilder } from "fast-xml-parser";
 
-import type { FUSMsg } from "../types/FUSMsg";
-
 const builder = new XMLBuilder({});
 
-const getLogicCheck = (input: string, nonce: string) => {
+const getLogicCheck = (input, nonce) => {
   let out = "";
 
   for (let i = 0; i < nonce.length; i++) {
-    const char: number = nonce.charCodeAt(i);
+    const char = nonce.charCodeAt(i);
     out += input[char & 0xf];
   }
 
   return out;
 };
 
-export const getBinaryInformMsg = (
-  version: string,
-  region: string,
-  model: string,
-  nonce: string,
-  imei: string
-): string => {
-  let msg: FUSMsg = {
+export const getBinaryInformMsg = (version, region, model, nonce, imei) => {
+  let msg = {
     FUSMsg: {
       FUSHdr: {
         ProtoVer: "1.0",
@@ -40,7 +32,7 @@ export const getBinaryInformMsg = (
             Data: "Smart Switch",
           },
           CLIENT_VERSION: {
-            Data: "4.3.23123_1",
+            Data: "4.3.24062_1",
           },
           DEVICE_FW_VERSION: {
             Data: version,
@@ -62,29 +54,28 @@ export const getBinaryInformMsg = (
     },
   };
 
-  //hardcode EUX as Germany and EUY as Republic of Serbia
-  if (region == "EUX") {
+  // Hardcode EUX as Germany and EUY as Republic of Serbia
+  if (region === "EUX") {
     let xelement = msg.FUSMsg.FUSBody.Put;
 
-    xelement.DEVICE_AID_CODE = { Data: region, };
-    xelement.DEVICE_CC_CODE = { Data: "DE", };
-    xelement.MCC_NUM = { Data: "262", };
-    xelement.MNC_NUM = { Data: "01", };
-
-  } else if (region == "EUY") {
+    xelement.DEVICE_AID_CODE = { Data: region };
+    xelement.DEVICE_CC_CODE = { Data: "DE" };
+    xelement.MCC_NUM = { Data: "262" };
+    xelement.MNC_NUM = { Data: "01" };
+  } else if (region === "EUY") {
     let xelement = msg.FUSMsg.FUSBody.Put;
-    
-    xelement.DEVICE_AID_CODE = { Data: region, };
-    xelement.DEVICE_CC_CODE = { Data: "RS", };
-    xelement.MCC_NUM = { Data: "220", };
-    xelement.MNC_NUM = { Data: "01", };
+
+    xelement.DEVICE_AID_CODE = { Data: region };
+    xelement.DEVICE_CC_CODE = { Data: "RS" };
+    xelement.MCC_NUM = { Data: "220" };
+    xelement.MNC_NUM = { Data: "01" };
   }
 
   return builder.build(msg);
 };
 
-export const getBinaryInitMsg = (filename: string, nonce: string): string => {
-  const msg: FUSMsg = {
+export const getBinaryInitMsg = (filename, nonce) => {
+  const msg = {
     FUSMsg: {
       FUSHdr: {
         ProtoVer: "1.0",
@@ -105,10 +96,7 @@ export const getBinaryInitMsg = (filename: string, nonce: string): string => {
   return builder.build(msg);
 };
 
-export const getDecryptionKey = (
-  version: string,
-  logicalValue: string
-): Buffer => {
+export const getDecryptionKey = (version, logicalValue) => {
   return crypto
     .createHash("md5")
     .update(getLogicCheck(version, logicalValue))
