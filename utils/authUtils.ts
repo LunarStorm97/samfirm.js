@@ -1,7 +1,9 @@
 import crypto from "crypto";
+
 const AUTH_KEY = "9u7qab84rpc16gvk";
 const NONCE_KEY = "vicopx7dqu06emacgpnpy8j8zwhduwlh";
-export const decryptNonce = (nonceEncrypted) => {
+
+const decryptNonce = (nonceEncrypted) => {
   const nonceDecipher = crypto.createDecipheriv(
     "aes-256-cbc",
     NONCE_KEY,
@@ -12,7 +14,8 @@ export const decryptNonce = (nonceEncrypted) => {
     nonceDecipher.final(),
   ]).toString("utf-8");
 };
-export const getAuthorization = (nonceDecrypted) => {
+
+const getAuthorization = (nonceDecrypted) => {
   let key = "";
   for (let i = 0; i < 16; i += 1) {
     const nonceChar = nonceDecrypted.charCodeAt(i);
@@ -29,6 +32,7 @@ export const getAuthorization = (nonceDecrypted) => {
     authCipher.final(),
   ]).toString("base64");
 };
+
 export const handleAuthRotation = (responseHeaders) => {
   const { nonce } = responseHeaders;
   const nonceDecrypted = decryptNonce(nonce);
