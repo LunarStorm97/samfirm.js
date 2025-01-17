@@ -60,7 +60,6 @@ export const getBinaryInformMsg = (
     },
   };
 
-  //hardcode EUX as Germany and EUY as Republic of Serbia
   if (region == "EUX") {
     let xelement = msg.FUSMsg.FUSBody.Put;
 
