@@ -6,12 +6,12 @@ import fs from "fs";
 import path from "path";
 import unzip from "unzip-stream";
 
-import { handleAuthRotation } from "./utils/authUtils";
+import { handleAuthRotation } from "./utils/authUtils.mjs";
 import {
   getBinaryInformMsg,
   getBinaryInitMsg,
   getDecryptionKey,
-} from "./utils/msgUtils";
+} from "./utils/msgUtils.mjs";
 
 const parser = new XMLParser({});
 
