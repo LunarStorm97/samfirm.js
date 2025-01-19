@@ -1,13 +1,10 @@
-#!/usr/bin/env node
-
 import axios from "axios";
-import cliProgress from "cli-progress";
+import { Command } from "commander";
 import crypto from "crypto";
-import fs from "fs";
 import { XMLParser } from "fast-xml-parser";
+import fs from "fs";
 import path from "path";
 import unzip from "unzip-stream";
-import yargs from "yargs";
 
 import { handleAuthRotation } from "./utils/authUtils";
 import {
@@ -15,12 +12,6 @@ import {
   getBinaryInitMsg,
   getDecryptionKey,
 } from "./utils/msgUtils";
-import { version as packageVersion } from "./package.json";
-
-// There is no viable option other than using the `unzip-stream` module, however,
-// it depends on an extremely old dependency `binary`, which uses `new Buffer()`
-// and causes node to complain. Suppress warnings until we find an alternative.
-process.removeAllListeners("warning");
 
 const parser = new XMLParser({});
 
@@ -218,29 +209,13 @@ const main = async (region, model, imei) => {
     });
 };
 
-const { argv } = yargs
-  .option("model", {
-    alias: "m",
-    describe: "Model",
-    type: "string",
-    demandOption: true,
-  })
-  .option("region", {
-    alias: "r",
-    describe: "Region",
-    type: "string",
-    demandOption: true,
-  })
-  .option("imei", {
-    alias: "i",
-    describe: "IMEI",
-    type: "string",
-    demandOption: true,
-  })
-  .version(packageVersion)
-  .alias("v", "version")
-  .help();
 
-main(argv.region, argv.model, argv.imei);
+const program = new Command();
+program
+  .requiredOption("-m, --model <model>", "Model")
+  .requiredOption("-r, --region <region>", "Region")
+  .requiredOption("-i, --imei <imei>", "IMEI/Serial Number")
+  .parse(process.argv);
 
-export {};
+const options = program.opts();
+main(options.region, options.model, options.imei);
