@@ -98,7 +98,7 @@ const main = async (region, model, imei) => {
     .post(
       "https://neofussvr.sslcs.cdngc.net/NF_DownloadBinaryInform.do",
       getBinaryInformMsg(
-        `${pda}/${csc}/${modem !== "" ? modem : pda}/${pda}`,
+        `${pda}/${csc}/${modem || pda}/${pda}`,
         region,
         model,
         nonce.decrypted,
@@ -121,7 +121,7 @@ const main = async (region, model, imei) => {
 
       return {
         binaryByteSize: parsedInfo.FUSMsg.FUSBody.Put.BINARY_BYTE_SIZE.Data,
-        binaryDescription: parsedInfo.FUSMsg.FUSBody.Put.DESCRIPTION.Data,
+        binaryDescription: parsedInfo.FUSMsg.FUSBody.Put.DESCRIPTION.Data || "N/A",
         binaryFilename: parsedInfo.FUSMsg.FUSBody.Put.BINARY_NAME.Data,
         binaryLogicValue:
           parsedInfo.FUSMsg.FUSBody.Put.LOGIC_VALUE_FACTORY.Data,
